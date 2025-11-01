@@ -63,6 +63,17 @@ CREATE TABLE IF NOT EXISTS alerts (
 ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
 ALTER TABLE alerts ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist
+DO $$
+BEGIN
+  DROP POLICY IF EXISTS "Anyone can submit feedback" ON feedback;
+  DROP POLICY IF EXISTS "Faculty can read all feedback" ON feedback;
+  DROP POLICY IF EXISTS "Faculty can read all alerts" ON alerts;
+  DROP POLICY IF EXISTS "System can create alerts" ON alerts;
+EXCEPTION
+  WHEN undefined_object THEN NULL;
+END $$;
+
 -- Create policies for feedback table
 -- Allow anyone to insert feedback (for student submissions)
 CREATE POLICY "Anyone can submit feedback"
@@ -100,18 +111,3 @@ CREATE INDEX IF NOT EXISTS idx_feedback_topic ON feedback(topic);
 CREATE INDEX IF NOT EXISTS idx_alerts_message_id ON alerts(message_id);
 CREATE INDEX IF NOT EXISTS idx_alerts_severity ON alerts(severity);
 CREATE INDEX IF NOT EXISTS idx_alerts_created_at ON alerts(created_at DESC);
-
--- Insert sample data for demonstration
-INSERT INTO feedback (message, sentiment, topic, suggestions, is_anonymous, student_name)
-VALUES 
-  ('The course content is excellent and the professor explains concepts very clearly. I really appreciate the interactive sessions.', 'positive', 'teaching', 'Continue the interactive approach and consider recording sessions for review.', false, 'Sarah Johnson'),
-  ('The assignments are too difficult and not well explained. Need more guidance.', 'negative', 'assignments', 'Provide clearer assignment guidelines and offer additional support sessions.', true, null),
-  ('Neutral feedback about the course structure. It''s okay but could be improved.', 'neutral', 'course content', 'Consider gathering more specific feedback to identify areas for improvement.', true, null),
-  ('Great facilities and resources available. Very satisfied with the learning environment.', 'positive', 'facilities', 'Maintain current facility standards and consider expanding successful resources.', false, 'Mike Chen');
-
--- Insert sample alerts for high-priority feedback
-INSERT INTO alerts (message_id, severity, alert_type)
-SELECT id, 'medium', 'academic_difficulty'
-FROM feedback 
-WHERE message LIKE '%too difficult%' 
-AND NOT EXISTS (SELECT 1 FROM alerts WHERE message_id = feedback.id);

@@ -33,3 +33,17 @@ export const signUp = async (email: string, password: string) => {
   if (error) throw error;
   return data;
 };
+
+export const signUpFaculty = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        role: 'faculty'
+      }
+    }
+  });
+  if (error) throw error;
+  return data;
+};

@@ -4,8 +4,9 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { formatDate, truncateText, exportToCSV } from '../../lib/utils';
 import type { Feedback } from '../../types';
-import { Download, Eye, Search, Filter } from 'lucide-react';
+import { Download, Eye, Search } from 'lucide-react';
 import { Input } from '../ui/Input';
+import { FacultyFeedbackModal } from './FacultyFeedbackModal';
 
 interface FeedbackTableProps {
   feedback: Feedback[];
@@ -91,7 +92,7 @@ export const FeedbackTable: React.FC<FeedbackTableProps> = ({ feedback }) => {
         <CardContent>
           {filteredFeedback.length === 0 ? (
             <div className="text-center py-12">
-              <Filter className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500">No feedback matches your filters</p>
             </div>
           ) : (
@@ -149,63 +150,10 @@ export const FeedbackTable: React.FC<FeedbackTableProps> = ({ feedback }) => {
 
       {/* Feedback Detail Modal */}
       {selectedFeedback && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle>Feedback Details</CardTitle>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {formatDate(selectedFeedback.created_at)}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedFeedback(null)}
-                >
-                  ✕
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div>
-                  <h4 className="font-medium mb-2">Student</h4>
-                  {selectedFeedback.is_anonymous ? (
-                    <Badge variant="default">Anonymous</Badge>
-                  ) : (
-                    <p className="text-gray-900">{selectedFeedback.student_name || 'N/A'}</p>
-                  )}
-                </div>
-
-                <div>
-                  <h4 className="font-medium mb-2">Topic & Sentiment</h4>
-                  <div className="flex space-x-2">
-                    <Badge variant="info">{selectedFeedback.topic}</Badge>
-                    {getSentimentBadge(selectedFeedback.sentiment)}
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="font-medium mb-2">Message</h4>
-                  <p className="text-gray-900 bg-gray-50 p-4 rounded-lg">
-                    {selectedFeedback.message}
-                  </p>
-                </div>
-
-                {selectedFeedback.suggestions && (
-                  <div>
-                    <h4 className="font-medium mb-2">AI Suggestions</h4>
-                    <p className="text-gray-700 bg-blue-50 p-4 rounded-lg">
-                      {selectedFeedback.suggestions}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <FacultyFeedbackModal
+          feedback={selectedFeedback}
+          onClose={() => setSelectedFeedback(null)}
+        />
       )}
     </>
   );

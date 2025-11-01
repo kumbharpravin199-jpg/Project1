@@ -6,6 +6,9 @@ export interface Feedback {
   suggestions: string;
   is_anonymous: boolean;
   student_name: string | null;
+  student_id: string | null;
+  viewed_at: string | null;
+  viewed_by: string | null;
   created_at: string;
 }
 
@@ -16,6 +19,15 @@ export interface Alert {
   alert_type: string;
   created_at: string;
   feedback?: Feedback;
+}
+
+export interface Message {
+  id: string;
+  feedback_id: string;
+  sender_id: string;
+  sender_type: 'student' | 'faculty';
+  message: string;
+  created_at: string;
 }
 
 export interface DashboardStats {

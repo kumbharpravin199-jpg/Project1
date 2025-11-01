@@ -1,18 +1,34 @@
 import React, { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, signOut } from '../lib/supabase';
 import { analyzeFeedback, detectAlerts } from '../lib/gemini';
 import { Button } from './ui/Button';
 import { Textarea } from './ui/Textarea';
 import { Input } from './ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import toast from 'react-hot-toast';
-import { MessageSquare, User, UserX, Send } from 'lucide-react';
+import { User, UserX, Send, Eye, LogOut, History } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
-export const FeedbackForm: React.FC = () => {
+interface FeedbackFormProps {
+  onViewMyFeedbacks?: () => void;
+}
+
+export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onViewMyFeedbacks }) => {
+  const { user } = useAuth();
   const [message, setMessage] = useState('');
   const [studentName, setStudentName] = useState('');
-  const [isAnonymous, setIsAnonymous] = useState(true);
+  const [isAnonymous, setIsAnonymous] = useState(false); // Default to non-anonymous since user is logged in
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedFeedbackId, setSubmittedFeedbackId] = useState<string | null>(null);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast.success('Logged out successfully');
+    } catch (error) {
+      toast.error('Failed to log out');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +50,7 @@ export const FeedbackForm: React.FC = () => {
       const analysis = await analyzeFeedback(message);
       const alerts = detectAlerts(message);
 
-      // Insert feedback
+      // Insert feedback - Always include student_id when user is logged in
       const { data: feedbackData, error: feedbackError } = await supabase
         .from('feedback')
         .insert({
@@ -43,12 +59,19 @@ export const FeedbackForm: React.FC = () => {
           topic: analysis.topic,
           suggestions: analysis.suggestions,
           is_anonymous: isAnonymous,
-          student_name: isAnonymous ? null : studentName.trim() || null
+          student_name: isAnonymous ? null : studentName.trim() || null,
+          student_id: user?.id || null
         })
         .select()
         .single();
 
       if (feedbackError) throw feedbackError;
+
+      // Store feedback ID for viewing later
+      if (feedbackData) {
+        setSubmittedFeedbackId(feedbackData.id);
+        localStorage.setItem(`feedback_${feedbackData.id}`, 'true');
+      }
 
       // Insert alerts if any
       if (alerts.length > 0 && feedbackData) {
@@ -85,16 +108,65 @@ export const FeedbackForm: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8 mt-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
-            <MessageSquare className="w-8 h-8 text-white" />
+      <div className="max-w-2xl mx-auto mt-8">
+        {/* User info, my feedbacks, and logout */}
+        {user && (
+          <div className="mb-4 flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
+            <div className="text-sm">
+              <span className="text-gray-600">Logged in as: </span>
+              <span className="font-medium text-gray-900">{user.email}</span>
+            </div>
+            <div className="flex gap-2">
+              {onViewMyFeedbacks && (
+                <Button
+                  onClick={onViewMyFeedbacks}
+                  variant="outline"
+                  size="sm"
+                >
+                  <History className="w-4 h-4 mr-2" />
+                  My Feedbacks
+                </Button>
+              )}
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                size="sm"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Student Feedback</h1>
-          <p className="text-gray-600">
-            Share your thoughts and help us improve your learning experience
-          </p>
-        </div>
+        )}
+
+        {/* Show "See Your Feedback" button if user submitted non-anonymous feedback */}
+        {submittedFeedbackId && !isAnonymous && (
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-green-800 mb-3 font-medium">✓ Feedback submitted successfully!</p>
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                onClick={() => {
+                  window.location.pathname = `/feedback/${submittedFeedbackId}`;
+                  window.location.reload();
+                }}
+                variant="outline"
+                className="bg-white"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                View This Feedback
+              </Button>
+              {onViewMyFeedbacks && (
+                <Button
+                  onClick={onViewMyFeedbacks}
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  <History className="w-4 h-4 mr-2" />
+                  View All My Feedbacks
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
 
         <Card>
           <CardHeader>
@@ -157,12 +229,19 @@ export const FeedbackForm: React.FC = () => {
                   </div>
 
                   {!isAnonymous && (
-                    <Input
-                      label="Your Name (Optional)"
-                      placeholder="Enter your name"
-                      value={studentName}
-                      onChange={(e) => setStudentName(e.target.value)}
-                    />
+                    <div>
+                      <Input
+                        label="Your Name (Optional)"
+                        placeholder="Enter your name"
+                        value={studentName}
+                        onChange={(e) => setStudentName(e.target.value)}
+                      />
+                      {user && (
+                        <p className="text-sm text-green-600 mt-2">
+                          ✓ Logged in as {user.email}
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -190,6 +269,9 @@ export const FeedbackForm: React.FC = () => {
             <li>• Enhance campus facilities and resources</li>
             <li>• Address student concerns promptly</li>
             <li>• Create a better learning environment for everyone</li>
+            {!isAnonymous && (
+              <li className="text-blue-600 font-medium mt-2">• Track your feedback status and chat with faculty</li>
+            )}
           </ul>
         </div>
       </div>
