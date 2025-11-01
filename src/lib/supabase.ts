@@ -15,6 +15,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Get the redirect URL (use production URL if available, otherwise current origin)
+const getRedirectUrl = () => {
+  const productionUrl = import.meta.env.VITE_APP_URL;
+  if (productionUrl) {
+    return productionUrl.endsWith('/') ? productionUrl : `${productionUrl}/`;
+  }
+  return window.location.origin + '/';
+};
+
 export const getCurrentUser = async () => {
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error) throw error;
@@ -39,6 +48,9 @@ export const signUp = async (email: string, password: string) => {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      emailRedirectTo: getRedirectUrl(),
+    }
   });
   if (error) throw error;
   return data;
@@ -49,6 +61,7 @@ export const signUpFaculty = async (email: string, password: string) => {
     email,
     password,
     options: {
+      emailRedirectTo: getRedirectUrl(),
       data: {
         role: 'faculty'
       }
