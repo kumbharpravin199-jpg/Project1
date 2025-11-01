@@ -110,14 +110,16 @@ function App() {
     return (
       <>
         <Navbar />
-        <div className="fixed top-4 right-4 z-50">
+        <div className="fixed top-16 sm:top-4 right-3 sm:right-4 z-50">
           <Button
             variant="outline"
             onClick={() => setViewMode('faculty')}
-            className="bg-white shadow-lg"
+            className="bg-white shadow-lg text-xs sm:text-sm"
+            size="sm"
           >
-            <BarChart3 className="w-4 h-4 mr-2" />
-            Faculty Login
+            <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Faculty Login</span>
+            <span className="sm:hidden">Faculty</span>
           </Button>
         </div>
         <StudentAuth onSuccess={() => {}} />
@@ -130,14 +132,16 @@ function App() {
   return (
     <>
       <Navbar />
-      <div className="fixed top-4 right-4 z-50">
+      <div className="fixed top-16 sm:top-4 right-3 sm:right-4 z-50">
         <Button
           variant="outline"
           onClick={() => setViewMode('student')}
-          className="bg-white shadow-lg"
+          className="bg-white shadow-lg text-xs sm:text-sm"
+          size="sm"
         >
-          <Users className="w-4 h-4 mr-2" />
-          Student View
+          <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Student View</span>
+          <span className="sm:hidden">Student</span>
         </Button>
       </div>
       <LoginForm onSuccess={() => setViewMode('student')} />

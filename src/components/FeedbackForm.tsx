@@ -107,33 +107,37 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onViewMyFeedbacks })
   const characterLimit = 2000;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-2xl mx-auto mt-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-3 sm:p-4">
+      <div className="max-w-2xl mx-auto mt-4 sm:mt-8">
         {/* User info, my feedbacks, and logout */}
         {user && (
-          <div className="mb-4 flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-            <div className="text-sm">
+          <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 sm:p-4 rounded-lg shadow-sm gap-3">
+            <div className="text-xs sm:text-sm break-all">
               <span className="text-gray-600">Logged in as: </span>
               <span className="font-medium text-gray-900">{user.email}</span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               {onViewMyFeedbacks && (
                 <Button
                   onClick={onViewMyFeedbacks}
                   variant="outline"
                   size="sm"
+                  className="flex-1 sm:flex-none"
                 >
-                  <History className="w-4 h-4 mr-2" />
-                  My Feedbacks
+                  <History className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">My Feedbacks</span>
+                  <span className="sm:hidden">History</span>
                 </Button>
               )}
               <Button
                 onClick={handleLogout}
                 variant="outline"
                 size="sm"
+                className="flex-1 sm:flex-none"
               >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
+                <LogOut className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Logout</span>
+                <span className="sm:hidden">Exit</span>
               </Button>
             </div>
           </div>
@@ -141,9 +145,9 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onViewMyFeedbacks })
 
         {/* Show "See Your Feedback" button if user submitted non-anonymous feedback */}
         {submittedFeedbackId && !isAnonymous && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-green-800 mb-3 font-medium">✓ Feedback submitted successfully!</p>
-            <div className="flex gap-2 flex-wrap">
+          <div className="mb-4 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm sm:text-base text-green-800 mb-3 font-medium">✓ Feedback submitted successfully!</p>
+            <div className="flex gap-2 flex-col sm:flex-row">
               <Button
                 onClick={() => {
                   window.location.pathname = `/feedback/${submittedFeedbackId}`;

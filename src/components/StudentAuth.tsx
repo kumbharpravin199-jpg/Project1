@@ -77,13 +77,13 @@ export const StudentAuth: React.FC<StudentAuthProps> = ({ onSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-3 sm:p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">
+          <CardTitle className="text-xl sm:text-2xl text-center">
             {isLogin ? 'Student Login' : 'Student Sign Up'}
           </CardTitle>
-          <p className="text-sm text-gray-600 text-center mt-2">
+          <p className="text-xs sm:text-sm text-gray-600 text-center mt-2">
             Login to submit and track your feedback
           </p>
         </CardHeader>
